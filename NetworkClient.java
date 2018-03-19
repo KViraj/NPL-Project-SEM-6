@@ -7,8 +7,7 @@ import java.net.Socket;
 
 public class NetworkClient {
 
-public static void main(String args[]) throws IOException, InterruptedException{
-
+public static void main(String args[]) throws IOException, InterruptedException {
 
     InetAddress address=InetAddress.getLocalHost();
     Socket s1=null;
@@ -28,7 +27,6 @@ public static void main(String args[]) throws IOException, InterruptedException{
         e.printStackTrace();
         System.err.print("IO Exception");
     }
-
     //System.out.println("Client Address : "+address);
     System.out.println(options);
 
@@ -62,11 +60,8 @@ public static void main(String args[]) throws IOException, InterruptedException{
     System.out.println("Socket read Error");
     }
     finally{
-
         is.close();os.close();br.close();s1.close();
                 System.out.println("Connection Closed");
-
     }
-
 }
 }
