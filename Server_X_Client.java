@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Base64;
 import M.Money;
 
 
@@ -42,14 +43,13 @@ class ServerThread extends Thread {
     BufferedReader  is = null;
     PrintWriter os=null;
     Socket s=null;
-    public static Money m = new Money(); //static object between multiple threads
+    public static Money m = new Money(); //static object between multiple threads for consistent "userData"
 
     public ServerThread(Socket s) {
         this.s=s;
     }
 
     public void run() {
-        //Accounts login=null;
         String login="";
         try {
             is= new BufferedReader(new InputStreamReader(s.getInputStream()));
@@ -61,15 +61,26 @@ class ServerThread extends Thread {
 
         try {
             do {
-                opt = Integer.parseInt(is.readLine());
+                //Read Base64 input and decode
+                String opn = is.readLine();
+                opt = Integer.parseInt(new String(Base64.getDecoder().decode(opn), "utf-8"));
+                System.out.println("Encoded data received : "+opn+"\n");
                 switch (opt) {
                     case 1 ://accept credentials
+
                             os.println("Enter username:");
                             os.flush();
-                            String username = is.readLine();
+                            //Read Base64 input and decode
+                            String unameBytes = is.readLine();
+                            System.out.println("Encoded data received : "+unameBytes+"\n");
+                            String username = new String(Base64.getDecoder().decode(unameBytes), "utf-8");
+
                             os.println("Enter password:");
                             os.flush();
-                            String password = is.readLine();
+                            //Read Base64 input and decode
+                            String passBytes = is.readLine();
+                            System.out.println("Encoded data received : "+passBytes+"\n");
+                            String password = new String(Base64.getDecoder().decode(passBytes), "utf-8");
                             login = m.login(username,password); //login to account
 
                             if (login!="") {
@@ -85,11 +96,17 @@ class ServerThread extends Thread {
                                 //receiving account name
                                 os.println("Who do you want to send it to?");
                                 os.flush();
-                                String receiver = is.readLine();
+                                //Read Base64 input and decode
+                                String recBytes=is.readLine();
+                                System.out.println("Encoded data received : "+recBytes+"\n");
+                                String receiver = new String(Base64.getDecoder().decode(recBytes), "utf-8");
                                 //transfer amount
                                 os.println("Enter amount to be sent: ");
                                 os.flush();
-                                float amt = Float.parseFloat(is.readLine());
+                                //Read Base64 input and decode
+                                String amtBytes=is.readLine();
+                                System.out.println("Encoded data received : "+amtBytes+"\n");
+                                float amt = Float.parseFloat(new String(Base64.getDecoder().decode(amtBytes), "utf-8"));
                                 //Transaction and result
                                 int status = m.transaction(login,receiver,amt);
                                 if (status==1)
@@ -112,9 +129,8 @@ class ServerThread extends Thread {
                     case 4 : os.println("Bye!");
                              break;
                     default : os.println("Wrong Choice!opt");
-                              
                 }
-                os.flush();
+                os.flush();//Single flush statement put after switch for all println at end of each case
             } while (opt<4);
         } catch (IOException e) {
 

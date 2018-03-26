@@ -4,10 +4,12 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Base64;
 
 public class NetworkClient {
 
-public static void main(String args[]) throws IOException, InterruptedException {
+public static void main(String args[]) throws IOException, InterruptedException{
+
 
     InetAddress address=InetAddress.getLocalHost();
     Socket s1=null;
@@ -27,12 +29,16 @@ public static void main(String args[]) throws IOException, InterruptedException 
         e.printStackTrace();
         System.err.print("IO Exception");
     }
+
     //System.out.println("Client Address : "+address);
     System.out.println(options);
 
     String response=null;
     try{
-        line=br.readLine(); 
+        //Read Line from user
+        String lineNoEnc=br.readLine(); 
+        //Encode into Base64
+        line = Base64.getEncoder().encodeToString(lineNoEnc.getBytes("utf-8"));
         while(true) {
                 os.println(line);
                 os.flush();
@@ -42,17 +48,20 @@ public static void main(String args[]) throws IOException, InterruptedException 
                 if(response.substring(response.length()-3).equals("opt")) {
                     response=response.substring(0,response.length()-3);
                     System.out.println("Server : "+response);
-                    new Thread().sleep(2000);
+                    new Thread().sleep(1500);
                     System.out.println (options);
                 }
                 else
                     System.out.println("Server : "+response);
 
                 //For opt 4.. Statement is written here so as to print server response for "4"
-                if (line.compareTo("4")==0) {
+                if (lineNoEnc.compareTo("4")==0) {
                     break;
                 }
-                line=br.readLine();//read clientside input
+
+                //Read client-side input and encode to Base64
+                lineNoEnc=br.readLine();
+                line = Base64.getEncoder().encodeToString(lineNoEnc.getBytes("utf-8"));
             }
     }
     catch(IOException e){
@@ -60,8 +69,11 @@ public static void main(String args[]) throws IOException, InterruptedException 
     System.out.println("Socket read Error");
     }
     finally{
+
         is.close();os.close();br.close();s1.close();
                 System.out.println("Connection Closed");
+
     }
+
 }
 }
