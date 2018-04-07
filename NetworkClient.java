@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Base64;
+import java.net.SocketException;
 
 public class NetworkClient {
 
@@ -34,15 +35,17 @@ public static void main(String args[]) throws IOException, InterruptedException{
     System.out.println(options);
 
     String response=null;
+    boolean passflag;
     try{
         //Read Line from user
         String lineNoEnc=br.readLine(); 
         //Encode into Base64
         line = Base64.getEncoder().encodeToString(lineNoEnc.getBytes("utf-8"));
         while(true) {
+        		passflag=false;
                 os.println(line);
                 os.flush();
-                response=is.readLine();//read Line from Server output
+                response=is.readLine();	//read Line from Server output
 
                 //Decide when to show options
                 if(response.substring(response.length()-3).equals("opt")) {
@@ -51,8 +54,13 @@ public static void main(String args[]) throws IOException, InterruptedException{
                     new Thread().sleep(1500);
                     System.out.println (options);
                 }
-                else
+                else if (response.equals("Enter password:")) {	//check if asked for password
+                	System.out.println("Server : "+response);
+                	passflag= true;
+                }
+                else{
                     System.out.println("Server : "+response);
+                }
 
                 //For opt 4.. Statement is written here so as to print server response for "4"
                 if (lineNoEnc.compareTo("4")==0) {
@@ -60,9 +68,17 @@ public static void main(String args[]) throws IOException, InterruptedException{
                 }
 
                 //Read client-side input and encode to Base64
-                lineNoEnc=br.readLine();
+                if (passflag) {	//read password without showing characters on console
+                	lineNoEnc = new String(System.console().readPassword());
+                }
+                else {	//read normally
+                	lineNoEnc=br.readLine();
+                }
                 line = Base64.getEncoder().encodeToString(lineNoEnc.getBytes("utf-8"));
             }
+    }
+    catch (SocketException e) {
+    	System.out.println("Terminated from Server side!!");
     }
     catch(IOException e){
         e.printStackTrace();
