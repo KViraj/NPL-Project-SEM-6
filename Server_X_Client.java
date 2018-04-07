@@ -51,6 +51,7 @@ class ServerThread extends Thread {
 
     public void run() {
         String login="";
+        int failed=0;	//limited number of attempts
         try {
             is= new BufferedReader(new InputStreamReader(s.getInputStream()));
             os=new PrintWriter(s.getOutputStream());
@@ -60,7 +61,7 @@ class ServerThread extends Thread {
         }
 
         try {
-            do {
+            outer : do {
                 //Read Base64 input and decode
                 String opn = is.readLine();
                 opt = Integer.parseInt(new String(Base64.getDecoder().decode(opn), "utf-8"));
@@ -88,7 +89,14 @@ class ServerThread extends Thread {
                                 os.println("Welcome "+login+"opt");
                             }
                             else {
-                                os.println("Login Failed.opt");
+                                failed++;
+                                if (failed<3)
+                                	os.println("Login Failed.opt");
+                                else {
+                                	os.println("Too many attempts! Session Terminated. Exit using Ctrl+C");
+                                	os.flush();
+                                	break outer;
+                                }
                             }
                             break;
 
